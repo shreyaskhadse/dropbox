@@ -1,0 +1,135 @@
+I am Hiring an intern for my team
+1. Write me a R code which creates an unclean dataset with atleast 2000 observations 6 variables, of which 2 are highly correlated, 1 is non normally distributed, and 1 is an outcome variable which is dependent on the other variables in the dataset. The data shuld be unclean, meaning it should have 5% of the values as NA across all variables except the outcome variable. The NA values should not be present in the same row meaning a whole row should not be NA. I will be giving this data to the intern and ask him to clean it and run a run a linear regression model to predict the outcome variable. The outcome variable will be dependent on only 2 variables from the dataset, the intern is expected to select the factors correctly and model it. I will also be asking the intern to plot the outcome as a function of the two variables and plot the predicted values from the model over it in ggplot.
+
+2. Now be in place of the intern and write the expected code. The code will include, exploratory analysis, plotting all the variables, cleaning the data, plotting the variables against the outcome in a ggplot, check the correlation of the variables against the outcome, other steps that may be required to identify the correct modelling parameters and then finally selecting the two variables create the model, plot the actual outcome as a function of the two variables, and also plot the redicted outcome in the same plot
+
+3. Also tell me a few basic statistics questions that I can ask the intern to make sure he understood what he has performed and make sure he is good enough to join
+
+##########################################################################################################################
+##########################################################################################################################
+
+Certainly! Here's the code that creates an unclean dataset with the desired characteristics for the intern:
+
+```R
+# Load the required packages
+library(dplyr)
+library(ggplot2)
+
+# Set the random seed for reproducibility
+set.seed(123)
+
+# Function to introduce NA values in a vector without making the whole row NA
+introduce_nas <- function(x, num_na) {
+  nas <- sample(length(x), num_na)
+  x[nas] <- NA
+  x
+}
+
+# Generate the unclean dataset
+num_rows <- 2000
+
+# Variable 1: Normally distributed
+var1 <- rnorm(num_rows, mean = 50, sd = 10)
+
+# Variable 2: Normally distributed
+var2 <- rnorm(num_rows, mean = 30, sd = 5)
+
+# Variable 3: Highly correlated with var1
+var3 <- var1 + rnorm(num_rows, mean = 0, sd = 5)
+
+# Variable 4: Non-normally distributed (e.g., exponential distribution)
+var4 <- rexp(num_rows, rate = 0.1)
+
+# Variable 5: Non-normally distributed (e.g., Poisson distribution)
+var5 <- rpois(num_rows, lambda = 10)
+
+# Variable 6: Outcome variable dependent on var1 and var2
+outcome <- 2 * var1 + 3 * var2 + rnorm(num_rows, mean = 0, sd = 10)
+
+# Introduce NA values randomly in each variable (except the outcome variable)
+na_ratio <- 0.05  # Proportion of NA values to introduce
+num_na_per_var <- round(num_rows * na_ratio)
+
+var1 <- introduce_nas(var1, num_na_per_var)
+var2 <- introduce_nas(var2, num_na_per_var)
+var3 <- introduce_nas(var3, num_na_per_var)
+var4 <- introduce_nas(var4, num_na_per_var)
+var5 <- introduce_nas(var5, num_na_per_var)
+
+# Create the unclean dataset
+dataset <- data.frame(var1, var2, var3, var4, var5, outcome)
+
+# Display the first few rows of the dataset
+head(dataset)
+```
+
+Now, let's move on to the code that the intern is expected to write for exploratory analysis, data cleaning, modeling, and visualization:
+
+```R
+# Exploratory Analysis and Modeling (code for the intern)
+
+# Display summary statistics of the dataset
+summary(dataset)
+
+# Plot histograms of all variables
+hist(dataset$var1, main = "Histogram - var1")
+hist(dataset$var2, main = "Histogram - var2")
+hist(dataset$var3, main = "Histogram - var3")
+hist(dataset$var4, main = "Histogram - var4")
+hist(dataset$var5, main = "Histogram - var5")
+hist(dataset$outcome, main = "Histogram - outcome")
+
+# Plot scatter plots of outcome against each variable
+plot(dataset$var1, dataset$outcome, main = "Outcome vs. var1", xlab = "var1", ylab = "Outcome")
+plot(dataset$var2, dataset$outcome, main = "Outcome vs. var2", xlab = "var2", ylab = "Outcome")
+plot(dataset$var3, dataset$outcome, main = "Outcome vs. var3", xlab = "var3", ylab = "Outcome")
+plot(dataset$var4, dataset$outcome, main = "Outcome vs. var4", xlab = "var4", ylab = "Outcome")
+plot(dataset$var5, dataset$outcome, main =
+
+ "Outcome vs. var5", xlab = "var5", ylab = "Outcome")
+
+# Calculate correlation between variables and outcome
+cor(dataset[, c("var1", "var2", "var3", "var4", "var5")], dataset$outcome)
+
+# Data cleaning (e.g., imputing missing values, removing outliers)
+# Perform necessary steps based on the specific requirements
+
+# Select the two variables for the linear regression model
+# For example, let's choose var1 and var2
+selected_dataset <- dataset %>% select(var1, var2, outcome)
+
+# Model the linear regression with outcome dependent on var1 and var2
+model <- lm(outcome ~ var1 + var2, data = selected_dataset)
+
+# Display the model summary
+summary(model)
+
+# Plot the actual outcome as a function of var1 and var2, with predicted values from the model
+predicted_values <- predict(model, newdata = selected_dataset)
+
+ggplot(selected_dataset, aes(x = var1, y = var2)) +
+  geom_point(aes(color = outcome), alpha = 0.6) +
+  geom_point(aes(y = predicted_values), color = "red", alpha = 0.6) +
+  labs(x = "var1", y = "var2", color = "Outcome") +
+  ggtitle("Actual Outcome vs. var1 and var2")
+```
+
+In this code, the intern is expected to perform exploratory analysis on the dataset by calculating summary statistics, plotting histograms and scatter plots, and examining the correlation between variables and the outcome.
+
+Next, they should clean the data by performing necessary steps such as imputing missing values and removing outliers based on specific requirements.
+
+They can then select the two variables (`var1` and `var2`) for the linear regression model and fit the model using the `lm()` function. The model summary can be displayed using `summary(model)`.
+
+Finally, they should plot the actual outcome as a function of `var1` and `var2` using ggplot, along with the predicted values from the model.
+
+Regarding the statistics questions, here are a few basic questions you can ask the intern to assess their understanding:
+
+1. What is the purpose of exploratory data analysis, and what techniques can be used for this purpose?
+2. How would you handle missing values in a dataset? Can you explain different imputation methods?
+3. What is the significance of checking variable distributions in data analysis? How can you determine if a variable follows a normal distribution?
+4. How can you assess the relationship between two variables? What does correlation measure, and how is it interpreted?
+5. What is linear regression, and how does it work? What assumptions are made in linear regression modeling?
+6. What does the R-squared value indicate in a linear regression model, and how is it interpreted?
+7. How can you evaluate the performance of a linear regression model? What metrics or techniques can be used for this purpose?
+
+These questions will help you gauge the intern's understanding of key statistical concepts and their ability to apply them in the context of the provided dataset.
