@@ -1,0 +1,26 @@
+# Load the iris dataset
+data(iris)
+
+# Set the random seed for reproducibility
+set.seed(123)
+
+# Generate additional 900 observations with random values
+extended_iris <- iris[sample(nrow(iris), 900, replace = TRUE), ]
+
+# Add NA values randomly to the extended dataset
+na_indices <- sample(nrow(extended_iris), 50)
+extended_iris$Sepal.Length[na_indices] <- NA
+extended_iris$Sepal.Width[na_indices] <- NA
+extended_iris$Petal.Length[na_indices] <- NA
+extended_iris$Petal.Width[na_indices] <- NA
+
+# Generate outliers for a specific variable
+outlier_indices <- sample(nrow(extended_iris), 20)
+extended_iris$Petal.Length[outlier_indices] <- extended_iris$Petal.Length[outlier_indices] + 10
+
+# Combine the extended dataset with the original iris dataset
+combined_iris <- rbind(iris, extended_iris)
+
+# Verify the dimensions and check for NA values
+dim(combined_iris)  # Should be 1000 observations and 5 variables
+sum(is.na(combined_iris))  # Count the number of NA values
