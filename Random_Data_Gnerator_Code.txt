@@ -1,34 +1,48 @@
-# Load the iris dataset
-data(iris)
+# Load the required packages
+library(dplyr)
+library(ggplot2)
 
 # Set the random seed for reproducibility
 set.seed(123)
 
-# Generate additional 900 observations with random values
-extended_iris <- iris[sample(nrow(iris), 900, replace = TRUE), ]
+# Generate a random dataset with unclean data
+num_rows <- 1000
 
-# Function to introduce NA values in a vector without overlapping with other NA values
-introduce_nas <- function(x, num_na) {
-  nas <- sample(length(x), num_na)
-  x[nas] <- NA
-  x
+# Generate random values for variables
+var1 <- rnorm(num_rows, mean = 50, sd = 10)
+var2 <- runif(num_rows, min = 0, max = 100)
+var3 <- rpois(num_rows, lambda = 5)
+
+# Introduce NA values randomly in each variable
+num_na_per_var <- 50  # Number of NA values to introduce per variable
+var1[sample(num_rows, num_na_per_var)] <- NA
+var2[sample(num_rows, num_na_per_var)] <- NA
+var3[sample(num_rows, num_na_per_var)] <- NA
+
+# Create the dataset
+dataset <- data.frame(var1, var2, var3)
+
+# Perform data cleaning task (e.g., impute missing values, remove outliers)
+# This task can be assigned to the intern
+
+# Perform Monte Carlo simulation
+num_iterations <- 1000
+
+simulation_results <- list()
+
+for (i in 1:num_iterations) {
+  # Perform any computations or analysis on the cleaned dataset
+  # For example, let's calculate the mean of var1 for each iteration
+  iteration_mean <- mean(dataset$var1, na.rm = TRUE)
+  
+  # Store the result of each iteration in the simulation_results list
+  simulation_results[[i]] <- iteration_mean
 }
 
-# Introduce NA values in each variable without overlapping
-num_na_per_var <- 10  # Number of NA values to introduce per variable
+# Create ggplot visualization of the simulation results
+sim_results_df <- data.frame(iteration = 1:num_iterations, mean_var1 = unlist(simulation_results))
 
-extended_iris$Sepal.Length <- introduce_nas(extended_iris$Sepal.Length, num_na_per_var)
-extended_iris$Sepal.Width <- introduce_nas(extended_iris$Sepal.Width, num_na_per_var)
-extended_iris$Petal.Length <- introduce_nas(extended_iris$Petal.Length, num_na_per_var)
-extended_iris$Petal.Width <- introduce_nas(extended_iris$Petal.Width, num_na_per_var)
-
-# Generate outliers for a specific variable
-outlier_indices <- sample(nrow(extended_iris), 20)
-extended_iris$Petal.Length[outlier_indices] <- extended_iris$Petal.Length[outlier_indices] + 10
-
-# Combine the extended dataset with the original iris dataset
-combined_iris <- rbind(iris, extended_iris)
-
-# Verify the dimensions and check for NA values
-dim(combined_iris)  # Should be 1000 observations and 5 variables
-sum(is.na(combined_iris))  # Count the number of NA values
+ggplot(sim_results_df, aes(x = iteration, y = mean_var1)) +
+  geom_line() +
+  labs(x = "Iteration", y = "Mean var1") +
+  ggtitle("Monte Carlo Simulation: Mean var1 by Iteration")
