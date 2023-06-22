@@ -5,44 +5,86 @@ library(ggplot2)
 # Set the random seed for reproducibility
 set.seed(123)
 
-# Generate a random dataset with unclean data
-num_rows <- 1000
-
-# Generate random values for variables
-var1 <- rnorm(num_rows, mean = 50, sd = 10)
-var2 <- runif(num_rows, min = 0, max = 100)
-var3 <- rpois(num_rows, lambda = 5)
-
-# Introduce NA values randomly in each variable
-num_na_per_var <- 50  # Number of NA values to introduce per variable
-var1[sample(num_rows, num_na_per_var)] <- NA
-var2[sample(num_rows, num_na_per_var)] <- NA
-var3[sample(num_rows, num_na_per_var)] <- NA
-
-# Create the dataset
-dataset <- data.frame(var1, var2, var3)
-
-# Perform data cleaning task (e.g., impute missing values, remove outliers)
-# This task can be assigned to the intern
-
-# Perform Monte Carlo simulation
-num_iterations <- 1000
-
-simulation_results <- list()
-
-for (i in 1:num_iterations) {
-  # Perform any computations or analysis on the cleaned dataset
-  # For example, let's calculate the mean of var1 for each iteration
-  iteration_mean <- mean(dataset$var1, na.rm = TRUE)
-  
-  # Store the result of each iteration in the simulation_results list
-  simulation_results[[i]] <- iteration_mean
+# Function to introduce NA values in a vector without making the whole row NA
+introduce_nas <- function(x, num_na) {
+  nas <- sample(length(x), num_na)
+  x[nas] <- NA
+  x
 }
 
-# Create ggplot visualization of the simulation results
-sim_results_df <- data.frame(iteration = 1:num_iterations, mean_var1 = unlist(simulation_results))
+# Generate the unclean dataset
+num_rows <- 2000
 
-ggplot(sim_results_df, aes(x = iteration, y = mean_var1)) +
-  geom_line() +
-  labs(x = "Iteration", y = "Mean var1") +
-  ggtitle("Monte Carlo Simulation: Mean var1 by Iteration")
+# Variable 1: Normally distributed
+var1 <- rnorm(num_rows, mean = 50, sd = 10)
+
+# Variable 2: Normally distributed
+var2 <- rnorm(num_rows, mean = 30, sd = 5)
+
+# Variable 3: Highly correlated with var1
+var3 <- var1 + rnorm(num_rows, mean = 0, sd = 5)
+
+# Variable 4: Non-normally distributed (e.g., exponential distribution)
+var4 <- rexp(num_rows, rate = 0.1)
+
+# Variable 5: Non-normally distributed (e.g., Poisson distribution)
+var5 <- rpois(num_rows, lambda = 10)
+
+# Variable 6: Outcome variable dependent on var1 and var2
+outcome <- 2*var1 + 3*var2 + rnorm(num_rows, mean = 0, sd = 10)
+
+# Introduce NA values randomly in each variable (except the outcome variable)
+num_na_per_var <- num_rows - 1000  # Number of NA values to introduce per variable (except outcome)
+
+var1 <- introduce_nas(var1, num_na_per_var)
+var2 <- introduce_nas(var2, num_na_per_var)
+var3 <- introduce_nas(var3, num_na_per_var)
+var4 <- introduce_nas(var4, num_na_per_var)
+var5 <- introduce_nas(var5, num_na_per_var)
+
+# Create the unclean dataset
+dataset <- data.frame(var1, var2, var3, var4, var5, outcome)
+
+# Exploratory Analysis and Data Cleaning (as an intern)
+
+# Plotting all variables
+plot_dataset <- dataset %>%
+  select(-outcome)
+
+pairs(plot_dataset)
+
+# Plotting variables against the outcome
+plot_data <- dataset %>%
+  select(outcome, var1, var2) %>%
+  na.omit()
+
+ggplot(plot_data, aes(x = var1, y = outcome)) +
+  geom_point() +
+  labs(x = "var1", y = "Outcome") +
+  ggtitle("Outcome vs var1")
+
+ggplot(plot_data, aes(x = var2, y = outcome)) +
+  geom_point() +
+  labs(x = "var2", y = "Outcome") +
+  ggtitle("Outcome vs var2")
+
+# Checking correlation with the outcome
+correlation <- cor(dataset[, c("var1", "var2", "outcome")], use = "complete.obs")
+correlation
+
+# Data cleaning and model selection
+cleaned_dataset <- dataset %>%
+  drop_na(outcome)  # Remove rows with NA values in the outcome variable
+
+selected_dataset <- cleaned_dataset %>%
+  select(var1, var2, outcome)
+
+# Model building
+model <- lm(outcome ~ var1 + var2, data = selected_dataset)
+
+# Plotting actual and predicted outcomes
+predicted_dataset <- selected_dataset %>%
+  mutate(predicted_outcome = predict(model))
+
+ggplot(selected_dataset, aes(x = var1, y = outcome)) +
+ 
