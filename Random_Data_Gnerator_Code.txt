@@ -7,12 +7,14 @@ set.seed(123)
 # Generate additional 900 observations with random values
 extended_iris <- iris[sample(nrow(iris), 900, replace = TRUE), ]
 
-# Add NA values randomly to the extended dataset
+# Introduce NA values in specific variables randomly
 na_indices <- sample(nrow(extended_iris), 50)
-extended_iris$Sepal.Length[na_indices] <- NA
-extended_iris$Sepal.Width[na_indices] <- NA
-extended_iris$Petal.Length[na_indices] <- NA
-extended_iris$Petal.Width[na_indices] <- NA
+num_na <- 5  # Number of NA values to introduce per variable
+
+for (i in na_indices) {
+  na_vars <- sample(names(extended_iris), num_na)
+  extended_iris[i, na_vars] <- NA
+}
 
 # Generate outliers for a specific variable
 outlier_indices <- sample(nrow(extended_iris), 20)
