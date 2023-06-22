@@ -87,4 +87,7 @@ predicted_dataset <- selected_dataset %>%
   mutate(predicted_outcome = predict(model))
 
 ggplot(selected_dataset, aes(x = var1, y = outcome)) +
- 
+  geom_point() +
+  geom_line(data = predicted_dataset, aes(x = var1, y = predicted_outcome), color = "red") +
+  labs(x = "var1", y = "Outcome") +
+  ggtitle("Actual Outcome vs Predicted Outcome")
