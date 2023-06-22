@@ -1,3 +1,6 @@
+Sure! Here's the code to create an unclean dataset with the desired characteristics for the UBS Credit Retail Team:
+
+```R
 # Load the required packages
 library(dplyr)
 library(ggplot2)
@@ -6,8 +9,8 @@ library(ggplot2)
 set.seed(123)
 
 # Function to introduce NA values in a vector without making the whole row NA
-introduce_nas <- function(x, num_na) {
-  nas <- sample(length(x), num_na)
+introduce_nas <- function(x, percentage) {
+  nas <- sample(length(x), floor(percentage * length(x)))
   x[nas] <- NA
   x
 }
@@ -34,60 +37,92 @@ var5 <- rpois(num_rows, lambda = 10)
 outcome <- 2*var1 + 3*var2 + rnorm(num_rows, mean = 0, sd = 10)
 
 # Introduce NA values randomly in each variable (except the outcome variable)
-num_na_per_var <- num_rows - 1000  # Number of NA values to introduce per variable (except outcome)
+na_percentage <- 0.05  # Percentage of NA values to introduce per variable (except outcome)
 
-var1 <- introduce_nas(var1, num_na_per_var)
-var2 <- introduce_nas(var2, num_na_per_var)
-var3 <- introduce_nas(var3, num_na_per_var)
-var4 <- introduce_nas(var4, num_na_per_var)
-var5 <- introduce_nas(var5, num_na_per_var)
+var1 <- introduce_nas(var1, na_percentage)
+var2 <- introduce_nas(var2, na_percentage)
+var3 <- introduce_nas(var3, na_percentage)
+var4 <- introduce_nas(var4, na_percentage)
+var5 <- introduce_nas(var5, na_percentage)
 
 # Create the unclean dataset
 dataset <- data.frame(var1, var2, var3, var4, var5, outcome)
 
-# Exploratory Analysis and Data Cleaning (as an intern)
+# Display the first few rows of the dataset
+head(dataset)
+```
 
-# Plotting all variables
-plot_dataset <- dataset %>%
-  select(-outcome)
+In this code, the unclean dataset is created as per the given requirements:
 
-pairs(plot_dataset)
+1. `var1` and `var2` are normally distributed variables.
+2. `var3` is generated as highly correlated with `var1` using random noise.
+3. `var4` and `var5` are non-normally distributed variables (exponential and Poisson, respectively).
+4. `outcome` is the outcome variable dependent on `var1` and `var2`, with random noise added.
 
-# Plotting variables against the outcome
-plot_data <- dataset %>%
-  select(outcome, var1, var2) %>%
-  na.omit()
+NA values are introduced randomly in each variable (except the outcome variable) using the `introduce_nas` function. The percentage of NA values to introduce per variable is set to 5%.
 
-ggplot(plot_data, aes(x = var1, y = outcome)) +
+Now, let's move on to the code as an intern performing exploratory analysis, data cleaning, linear regression modeling, and visualization:
+
+```R
+# Data Cleaning, Linear Regression Modeling, and Visualization (code as an intern)
+
+# Exploratory Analysis
+summary(dataset)
+cor(dataset[, c("var1", "var2", "var3", "var4", "var5", "outcome")])
+
+# Plotting Variables
+ggplot(dataset, aes(x = var1, y = var2)) +
+  geom_point() +
+  labs(x = "var1", y = "var2") +
+  ggtitle("Scatter Plot of var1 vs var2")
+
+ggplot(dataset, aes(x = var3)) +
+  geom_histogram(binwidth = 1) +
+  labs(x = "var3",
+
+ y = "Count") +
+  ggtitle("Histogram of var3")
+
+# Data Cleaning
+cleaned_dataset <- dataset[complete.cases(dataset), ]
+
+# Plotting Variables against Outcome
+ggplot(cleaned_dataset, aes(x = var1, y = outcome)) +
   geom_point() +
   labs(x = "var1", y = "Outcome") +
   ggtitle("Outcome vs var1")
 
-ggplot(plot_data, aes(x = var2, y = outcome)) +
+ggplot(cleaned_dataset, aes(x = var2, y = outcome)) +
   geom_point() +
   labs(x = "var2", y = "Outcome") +
   ggtitle("Outcome vs var2")
 
-# Checking correlation with the outcome
-correlation <- cor(dataset[, c("var1", "var2", "outcome")], use = "complete.obs")
-correlation
+# Check Correlation of Variables with Outcome
+cor(cleaned_dataset[, c("var1", "var2", "var3", "var4", "var5", "outcome")])
 
-# Data cleaning and model selection
-cleaned_dataset <- dataset %>%
-  drop_na(outcome)  # Remove rows with NA values in the outcome variable
-
-selected_dataset <- cleaned_dataset %>%
-  select(var1, var2, outcome)
-
-# Model building
+# Selecting Variables and Modeling
+selected_dataset <- cleaned_dataset[, c("var1", "var2", "outcome")]
 model <- lm(outcome ~ var1 + var2, data = selected_dataset)
+summary(model)
 
-# Plotting actual and predicted outcomes
-predicted_dataset <- selected_dataset %>%
-  mutate(predicted_outcome = predict(model))
+# Plotting Actual and Predicted Outcome
+selected_dataset$predicted_outcome <- predict(model, newdata = selected_dataset)
 
 ggplot(selected_dataset, aes(x = var1, y = outcome)) +
   geom_point() +
-  geom_line(data = predicted_dataset, aes(x = var1, y = predicted_outcome), color = "red") +
+  geom_line(aes(y = predicted_outcome), color = "red") +
   labs(x = "var1", y = "Outcome") +
   ggtitle("Actual Outcome vs Predicted Outcome")
+```
+
+In this code, as an intern, the following tasks are performed:
+
+1. Exploratory Analysis: Summary statistics and correlation analysis are conducted.
+2. Plotting Variables: Scatter plots and histograms are created for visualization.
+3. Data Cleaning: Rows with NA values are removed from the dataset.
+4. Plotting Variables against Outcome: Scatter plots are generated to visualize the relationship between variables and the outcome.
+5. Checking Correlation: Correlation analysis is performed to assess the relationship between variables and the outcome.
+6. Selecting Variables and Modeling: The two variables (`var1` and `var2`) are selected based on correlation and modeling a linear regression model.
+7. Plotting Actual and Predicted Outcome: A scatter plot is created to show the actual outcome and the predicted outcome from the model.
+
+By following these steps, the intern demonstrates their ability to explore the dataset, clean the data, select appropriate variables, build a linear regression model, and visualize the results using ggplot.
